@@ -1,2 +1,4 @@
 *.log
 *.toml
+Pipfile.lock
+.idea
