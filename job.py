@@ -84,7 +84,7 @@ async def state_updater(old_states, drop_after):
                 state.height = height_int
 
             # The following occurs during both new blocks & new txs & nothing happens for 60s (magic number)
-            if new_block or new_witness or state.timestamp + 60 < ts:
+            if new_block or new_witness or state.timestamp + 120 < ts:
                 # Generate coinbase #
 
                 if original_state is None:

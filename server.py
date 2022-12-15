@@ -16,7 +16,7 @@ class Proxy:
 
     def __init__(self, writer: asyncio.StreamWriter):
         self._writer = writer
-        self.worker = ''
+        self.worker = None
         self.extra_nonce = ''
         self.block_fond = 0
 
@@ -151,8 +151,7 @@ async def handle_client(reader, writer):
                     continue
                 else:
                     break
-            except Exception as e:
-                print(e)
+            except (ValueError, ConnectionResetError):
                 break
             else:
                 method = j.get('method')
@@ -169,8 +168,6 @@ async def handle_client(reader, writer):
                 else:
                     logger.error(j)
                     break
-    except ConnectionResetError:
-        pass
     except Exception as e:
         logger.error(e)
     finally:
@@ -179,7 +176,8 @@ async def handle_client(reader, writer):
             await writer.wait_closed()
         if writer in state.all_sessions:
             state.all_sessions.remove(writer)
-        logger.warning(f"worker disconnected {proxy.worker}")
+        if proxy.worker:
+            logger.warning(f"worker disconnected {proxy.worker}")
 
 
 async def run_proxy():
