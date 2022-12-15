@@ -1,9 +1,10 @@
 import pathlib
 import sys
-from config import schemas
 
 import pytoml as toml
 from loguru import logger
+
+from config import schemas
 
 BASE_DIR = pathlib.Path(__file__).parent.parent
 DEFAULT_CONFIG_PATH = BASE_DIR / 'config' / '.stratum-config.toml'

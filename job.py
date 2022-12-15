@@ -7,10 +7,10 @@ import base58
 from loguru import logger
 
 from coindrpc import coind
+from config import config
 from notification import send_msg
 from state import state
 from utils import op_push, var_int, merkle_from_txids, add_old_state_to_queue, dsha256
-from config import config
 
 
 async def state_updater(old_states, drop_after):

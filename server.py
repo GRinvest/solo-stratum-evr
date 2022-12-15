@@ -6,8 +6,8 @@ import ujson
 from loguru import logger
 
 from coindrpc import coind
-from state import state
 from config import config
+from state import state
 
 
 class Proxy:
@@ -132,7 +132,7 @@ class Proxy:
             TTF = difficulty_int * 2 ** 32 / hashrate
             await self.send_msg(None, True, msg['id'])
             await self.send_msg('client.show_message',
-                           [f'Estimated time to find: {round(TTF / 3600, 2)} hours'])
+                                [f'Estimated time to find: {round(TTF / 3600, 2)} hours'])
             logger.debug(f'Worker {self.worker} Reported Hashrate: {round(hashrate / 1000000, 2)} Mh/s ')
 
 
