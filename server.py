@@ -175,16 +175,16 @@ async def handle_client(reader, writer):
     except Exception as e:
         logger.error(e)
     finally:
-        while True:
-            if state.awaiting_update is False:
-                break
-            await asyncio.sleep(0.01)
-        if not writer.is_closing():
-            writer.close()
-            await writer.wait_closed()
-        if writer in state.all_sessions:
-            state.all_sessions.remove(writer)
         if proxy.worker:
+            while True:
+                if state.awaiting_update is False:
+                    break
+                await asyncio.sleep(0.01)
+            if not writer.is_closing():
+                writer.close()
+                await writer.wait_closed()
+            if writer in state.all_sessions:
+                state.all_sessions.remove(writer)
             logger.warning(f"worker disconnected {proxy.worker}")
 
 
