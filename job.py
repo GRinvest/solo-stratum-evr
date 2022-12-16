@@ -6,7 +6,7 @@ from time import time
 import base58
 from loguru import logger
 
-from coindrpc import coind
+from coindrpc import node
 from config import config
 from notification import send_msg
 from state import state
@@ -16,7 +16,7 @@ from utils import op_push, var_int, merkle_from_txids, add_old_state_to_queue, d
 async def state_updater(old_states, drop_after):
     if len(state.all_sessions) or len(state.new_sessions):
         try:
-            res = await coind.getblocktemplate()
+            res = await node.getblocktemplate()
             json_obj = res['result']
             version_int: int = json_obj['version']
             height_int: int = json_obj['height']
@@ -84,7 +84,7 @@ async def state_updater(old_states, drop_after):
                 state.height = height_int
 
             # The following occurs during both new blocks & new txs & nothing happens for 60s (magic number)
-            if new_block or new_witness or state.timestamp + 120 < ts:
+            if new_block or new_witness or state.timestamp + config.general.update_new_job < ts:
                 # Generate coinbase #
 
                 if original_state is None:

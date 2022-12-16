@@ -5,7 +5,7 @@ from time import time
 import ujson
 from loguru import logger
 
-from coindrpc import coind
+from coindrpc import node
 from config import config
 from state import state
 
@@ -79,7 +79,7 @@ class Proxy:
 
         block_hex = state_.build_block(nonce_hex, mixhash_hex)
         logger.info(block_hex)
-        res = await coind.submitblock(block_hex)
+        res = await node.submitblock(block_hex)
         logger.info(res)
         result = res.get('result', None)
         if result == 'inconclusive':
@@ -112,7 +112,7 @@ class Proxy:
             await self.send_msg('client.show_message', [msg_])
 
     async def handle_eth_submitHashrate(self, msg: dict):
-        res = await coind.getmininginfo()
+        res = await node.getmininginfo()
         json_obj = res['result']
         difficulty_int: int = json_obj['difficulty']
         networkhashps_int: int = json_obj['networkhashps']

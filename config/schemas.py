@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class General(BaseModel):
     kawpow_epoch_length: Optional[int] = 12000
     mining_address: Optional[str] = 'ETTurTg48LZACY4mLF3iX3iWWoSgDN4WxU'
+    update_new_job: Optional[int] = 45
 
 
 class Server(BaseModel):

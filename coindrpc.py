@@ -38,7 +38,7 @@ class Coind:
         return ret
 
 
-coind = Coind(config.coind.rpc_user,
-              config.coind.rpc_password,
-              config.coind.rpc_port,
-              config.coind.rpc_host)
+node = Coind(config.coind.rpc_user,
+             config.coind.rpc_password,
+             config.coind.rpc_port,
+             config.coind.rpc_host)
