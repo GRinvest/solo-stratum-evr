@@ -29,7 +29,7 @@ if __name__ == '__main__':
     logger.remove()
     logger.add(sys.stderr,
                colorize=True,
-               format="<yellow>{time:DD-MM-YYYY at HH:mm:ss}</yellow>: <level>{message}</level>")
+               format="{time:DD-MM-YYYY at HH:mm:ss} - <level>{message}</level>")
     logger.add("Stratum_{time}.log", rotation="10 MB", enqueue=True)
 
     try:
