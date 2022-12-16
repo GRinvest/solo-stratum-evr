@@ -14,11 +14,12 @@ class Proxy:
     last_time_reported_hs = 0
     hashrate_dict = {}
 
-    def __init__(self, writer: asyncio.StreamWriter):
+    def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+        self._reader = reader
         self._writer = writer
-        self.worker = None
-        self.extra_nonce = ''
-        self.block_fond = 0
+        self.worker: str | None = None
+        self.extra_nonce: str = ''
+        self.time_block_fond: int = 0
 
     async def send_msg(self,
                        method: str | None,
@@ -102,11 +103,11 @@ class Proxy:
             await self.send_msg(None, False, msg['id'], [20, res.get('result')])
 
         if res.get('result', 0) is None:
-            self.block_fond = time()
+            self.time_block_fond = time()
             block_height = int.from_bytes(
                 bytes.fromhex(block_hex[(4 + 32 + 32 + 4 + 4) * 2:(4 + 32 + 32 + 4 + 4 + 4) * 2]), 'little',
                 signed=False)
-            msg_ = f'Found block (may or may not be accepted by the chain): {block_height}'
+            msg_ = f'Found block worker {self.worker} (may or may not be accepted by the chain): {block_height}'
             logger.success(msg_)
             await self.send_msg(None, True, msg['id'])
             await self.send_msg('client.show_message', [msg_])
@@ -135,19 +136,15 @@ class Proxy:
                                 [f'Estimated time to find: {round(TTF / 3600, 2)} hours'])
             logger.debug(f'Worker {self.worker} Reported Hashrate: {round(hashrate / 1000000, 2)} Mh/s ')
 
-
-async def handle_client(reader, writer):
-    """Создание и проверка подключения"""
-    proxy = Proxy(writer)
-    try:
-        while not reader.at_eof():
+    async def adapter_handle(self):
+        while not self._reader.at_eof():
             try:
-                data = await asyncio.wait_for(reader.readline(), timeout=60 * 60)
+                data = await asyncio.wait_for(self._reader.readline(), timeout=60 * 60)
                 if not data:
                     break
                 j: dict = ujson.loads(data)
             except (TimeoutError, asyncio.TimeoutError):
-                if time() - proxy.block_fond < 4 * 60 * 60:
+                if time() - self.time_block_fond < 4 * 60 * 60:
                     continue
                 else:
                     break
@@ -156,21 +153,32 @@ async def handle_client(reader, writer):
             else:
                 method = j.get('method')
                 if method == 'mining.subscribe':
-                    await proxy.handle_subscribe(j)
+                    await self.handle_subscribe(j)
                 elif method == 'mining.authorize':
-                    await proxy.handle_authorize(j)
+                    await self.handle_authorize(j)
                 elif method == 'mining.submit':
-                    await proxy.handle_submit(j)
+                    await self.handle_submit(j)
                 elif method == 'eth_submitHashrate':
-                    await proxy.handle_eth_submitHashrate(j)
+                    await self.handle_eth_submitHashrate(j)
                 elif method is not None:
-                    await proxy.send_msg(None, False, None, [20, f'Method {method} not supported'])
+                    await self.send_msg(None, False, None, [20, f'Method {method} not supported'])
                 else:
                     logger.error(j)
                     break
+
+
+async def handle_client(reader, writer):
+    """Создание и проверка подключения"""
+    proxy = Proxy(reader, writer)
+    try:
+        await proxy.adapter_handle()
     except Exception as e:
         logger.error(e)
     finally:
+        while True:
+            if state.awaiting_update is False:
+                break
+            await asyncio.sleep(0.01)
         if not writer.is_closing():
             writer.close()
             await writer.wait_closed()

@@ -172,9 +172,11 @@ async def state_updater(old_states, drop_after):
                                                       state.height, bits_hex]))
                     )
                 if len(tasks):
+                    state.awaiting_update = True
                     await asyncio.gather(*tasks)
 
             for writer in state.new_sessions:
+                state.awaiting_update = True
                 state.all_sessions.add(writer)
                 await send_msg(writer, 'mining.set_target', [target_hex])
                 await send_msg(writer, 'mining.notify',
@@ -186,5 +188,7 @@ async def state_updater(old_states, drop_after):
         except Exception as e:
             logger.error(f'Error {e}')
             logger.error(
-                'Failed to query blocktemplate from node Sleeping for 5 minutes. Any solutions found during this time may not be current. Try restarting the proxy.')
-            await asyncio.sleep(300)
+                'Failed to query blocktemplate from node Sleeping for 10 sec. Any solutions found during this time may not be current. Try restarting the proxy.')
+            await asyncio.sleep(10)
+        finally:
+            state.awaiting_update = False
