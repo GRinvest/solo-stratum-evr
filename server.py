@@ -43,6 +43,8 @@ class Proxy:
                     state.all_sessions.remove(self._writer)
 
     async def handle_subscribe(self, msg: dict):
+        while state.lock.locked():
+            await asyncio.sleep(0.01)
         if self._writer not in state.all_sessions:
             state.new_sessions.add(self._writer)
         while True:
@@ -176,9 +178,7 @@ async def handle_client(reader, writer):
         logger.error(e)
     finally:
         if proxy.worker:
-            while True:
-                if state.awaiting_update is False:
-                    break
+            while state.lock.locked():
                 await asyncio.sleep(0.01)
             if not writer.is_closing():
                 writer.close()

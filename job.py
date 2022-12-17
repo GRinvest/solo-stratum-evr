@@ -157,38 +157,38 @@ async def state_updater(old_states, drop_after):
                 state.job_counter += 1
                 add_old_state_to_queue(old_states, original_state, drop_after)
 
-                tasks = []
-                for writer in state.all_sessions:
-                    tasks.append(
-                        asyncio.create_task(send_msg(writer, 'mining.set_target', [target_hex]))
-                    )
-                    tasks.append(
-                        asyncio.create_task(send_msg(writer,
-                                                     'mining.notify',
-                                                     [hex(state.job_counter)[2:],
-                                                      state.headerHash,
-                                                      state.seedHash.hex(),
-                                                      target_hex, True,
-                                                      state.height, bits_hex]))
-                    )
-                if len(tasks):
-                    state.awaiting_update = True
-                    await asyncio.gather(*tasks)
+                async with state.lock:
+                    tasks = []
+                    for writer in state.all_sessions:
+                        tasks.append(
+                            asyncio.create_task(send_msg(writer, 'mining.set_target', [target_hex]))
+                        )
+                        tasks.append(
+                            asyncio.create_task(send_msg(writer,
+                                                         'mining.notify',
+                                                         [hex(state.job_counter)[2:],
+                                                          state.headerHash,
+                                                          state.seedHash.hex(),
+                                                          target_hex, True,
+                                                          state.height, bits_hex]))
+                        )
+                    if len(tasks):
+                        await asyncio.gather(*tasks)
 
-            for writer in state.new_sessions:
-                state.awaiting_update = True
-                state.all_sessions.add(writer)
-                await send_msg(writer, 'mining.set_target', [target_hex])
-                await send_msg(writer, 'mining.notify',
-                               [hex(state.job_counter)[2:], state.headerHash, state.seedHash.hex(), target_hex, True,
-                                state.height, bits_hex])
-            if len(state.new_sessions):
-                state.new_sessions.clear()
+            async with state.lock:
+                for writer in state.new_sessions:
+                    state.awaiting_update = True
+                    state.all_sessions.add(writer)
+                    await send_msg(writer, 'mining.set_target', [target_hex])
+                    await send_msg(writer, 'mining.notify',
+                                   [hex(state.job_counter)[2:], state.headerHash, state.seedHash.hex(), target_hex, True,
+                                    state.height, bits_hex])
+                if len(state.new_sessions):
+                    state.new_sessions.clear()
 
         except Exception as e:
             logger.error(f'Error {e}')
             logger.error(
                 'Failed to query blocktemplate from node Sleeping for 10 sec. Any solutions found during this time may not be current. Try restarting the proxy.')
             await asyncio.sleep(10)
-        finally:
-            state.awaiting_update = False
+

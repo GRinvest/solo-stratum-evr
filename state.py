@@ -33,7 +33,7 @@ class TemplateState:
     all_sessions: set[asyncio.StreamWriter] = set()
     new_sessions: set[asyncio.StreamWriter] = set()
 
-    awaiting_update = False
+    lock = asyncio.Lock()
 
     job_counter = 0
     bits_counter = 0
