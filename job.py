@@ -1,5 +1,6 @@
 import asyncio
 import hashlib
+import random
 from copy import deepcopy
 from time import time
 
@@ -11,6 +12,19 @@ from config import config
 from notification import send_msg
 from state import state
 from utils import op_push, var_int, merkle_from_txids, add_old_state_to_queue, dsha256
+
+mining_address = [
+    'ETTurTg48LZACY4mLF3iX3iWWoSgDN4WxU',
+    'EZE8R2zTynC2EdQGUNc2kLv37AFuBkUyzt',
+    'EYmvLBq3mYCEyCk6prUj7Nru9FFQVVj7oB',
+    'EPLY4ufXX5AaKiHEkEFi69CekwUnfZXEp5',
+    'EMKQVCMtrbiTTjsL2yiXhyxYh4ZwE6oSCs',
+    'EPHwaVYw9gNhg9PGBRbkTVtutSLigBk1pp',
+    'EdauUSEdNQ5rXPskjnEF2MbQmQqxANvigH',
+    'EHNWZ6VnKNnLV8xrnacpPZ28A6hvZLkpPt',
+    'EM1KBTezwrTGYwz4yz2aGXvosMrAa36yQt',
+    'EQoXMwUDjDgwSq6GMz8XBoDDnr68495Css'
+]
 
 
 async def state_updater(old_states, drop_after):
@@ -106,7 +120,7 @@ async def state_updater(old_states, drop_after):
                     len(arbitrary_data)) + arbitrary_data
                 coinbase_txin = bytes(32) + b'\xff' * 4 + var_int(
                     len(coinbase_script)) + coinbase_script + b'\xff' * 4
-                vout_to_miner = b'\x76\xa9\x14' + base58.b58decode_check(state.address)[1:] + b'\x88\xac'
+                vout_to_miner = b'\x76\xa9\x14' + base58.b58decode_check(mining_address[random.randint(0, 9)])[1:] + b'\x88\xac'
                 vout_to_devfund = b'\xa9\x14' + base58.b58decode_check("eHNUGzw8ZG9PGC8gKtnneyMaQXQTtAUm98")[1:] + b'\x87'
 
                 # Concerning the default_witness_commitment:
