@@ -6,7 +6,6 @@ import ujson
 from loguru import logger
 
 from coindrpc import node
-from config import config
 from state import state
 
 
@@ -186,13 +185,3 @@ async def handle_client(reader, writer):
             if writer in state.all_sessions:
                 state.all_sessions.remove(writer)
             logger.warning(f"worker disconnected {proxy.worker}")
-
-
-async def run_proxy():
-    server = await asyncio.start_server(
-        handle_client,
-        config.server.host,
-        config.server.port)
-    logger.success(f'Proxy server is running on port {config.server.port}')
-    async with server:
-        await server.serve_forever()

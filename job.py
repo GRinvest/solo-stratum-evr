@@ -45,7 +45,7 @@ async def state_updater(old_states, drop_after):
             if state.height == -1 or state.height != height_int:
                 original_state = deepcopy(state)
                 # New block, update everything
-                logger.debug(f"New block {height_int}, update state {target_hex}")
+                logger.debug(f"New block {height_int - 1}, update state. New target: {target_hex}")
                 new_block = True
 
                 # Generate seed hash #
