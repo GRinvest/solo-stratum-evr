@@ -11,7 +11,7 @@ from server import handle_client
 async def job_manager():
     while True:
         await state_updater([list(), dict()], 20)
-        await asyncio.sleep(0.1)
+        await asyncio.sleep(0.3)
 
 
 async def run_proxy():
