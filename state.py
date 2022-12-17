@@ -12,7 +12,8 @@ class TemplateState:
 
     # The address of the miner that first connects is
     # the one that is used
-    address = config.general.mining_address
+    address = ''
+    timestamp_block_fond = 0
 
     # We store the following in hex because they are
     # Used directly in API to the miner

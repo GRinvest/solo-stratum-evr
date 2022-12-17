@@ -105,6 +105,7 @@ class Proxy:
 
         if res.get('result', 0) is None:
             self.time_block_fond = time()
+            state.timestamp_block_fond = time()
             block_height = int.from_bytes(
                 bytes.fromhex(block_hex[(4 + 32 + 32 + 4 + 4) * 2:(4 + 32 + 32 + 4 + 4 + 4) * 2]), 'little',
                 signed=False)
