@@ -14,6 +14,7 @@ class TemplateState:
     # the one that is used
     address = ''
     timestamp_block_fond = 0
+    update_new_job = 45
 
     # We store the following in hex because they are
     # Used directly in API to the miner

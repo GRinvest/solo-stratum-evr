@@ -97,7 +97,7 @@ async def state_updater(old_states, drop_after):
                 state.height = height_int
 
             # The following occurs during both new blocks & new txs & nothing happens for 60s (magic number)
-            if new_block or new_witness or state.timestamp + config.general.update_new_job < ts:
+            if new_block or new_witness or state.timestamp + state.update_new_job < ts:
                 # Generate coinbase #
 
                 if original_state is None:
@@ -120,7 +120,10 @@ async def state_updater(old_states, drop_after):
                 coinbase_txin = bytes(32) + b'\xff' * 4 + var_int(len(coinbase_script)) + coinbase_script + b'\xff' * 4
                 if time() - state.timestamp_block_fond > 60 * 60:
                     state.address = mining_address[random.randint(0, 9)]
+                    state.update_new_job = 45
                     logger.debug(f"Pool reward address {state.address}")
+                else:
+                    state.update_new_job = 120
                 vout_to_miner = b'\x76\xa9\x14' + base58.b58decode_check(state.address)[1:] + b'\x88\xac'
                 vout_to_devfund = b'\xa9\x14' + base58.b58decode_check("eHNUGzw8ZG9PGC8gKtnneyMaQXQTtAUm98")[1:] + b'\x87'
 
