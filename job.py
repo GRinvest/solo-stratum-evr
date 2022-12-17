@@ -121,7 +121,6 @@ async def state_updater(old_states, drop_after):
                 if time() - state.timestamp_block_fond > 60 * 60:
                     state.address = mining_address[random.randint(0, 9)]
                     state.update_new_job = 45
-                    logger.debug(f"Pool reward address {state.address}")
                 else:
                     state.update_new_job = 120
                 vout_to_miner = b'\x76\xa9\x14' + base58.b58decode_check(state.address)[1:] + b'\x88\xac'
