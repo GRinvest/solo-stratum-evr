@@ -10,7 +10,7 @@ from server import handle_client
 
 async def job_manager(event: asyncio.Event):
     while True:
-        await state_updater([list(), dict()], 20)
+        await state_updater()
         await asyncio.sleep(0.3)
         if not event.is_set():
             event.set()

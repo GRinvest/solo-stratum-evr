@@ -11,7 +11,7 @@ from coindrpc import node
 from config import config
 from notification import send_msg
 from state import state
-from utils import op_push, var_int, merkle_from_txids, add_old_state_to_queue, dsha256
+from utils import op_push, var_int, merkle_from_txids, dsha256
 
 mining_address = [
     'ETTurTg48LZACY4mLF3iX3iWWoSgDN4WxU',
@@ -40,7 +40,7 @@ async def task_send_new_job(writer: asyncio.StreamWriter):
                     state.bits])
 
 
-async def state_updater(old_states, drop_after):
+async def state_updater():
     try:
         res = await node.getblocktemplate()
         json_obj = res['result']
@@ -63,12 +63,9 @@ async def state_updater(old_states, drop_after):
 
         new_block = False
 
-        original_state = None
-
         # The following will only change when there is a new block.
         # Force update is unnecessary
         if state.height == -1 or state.height != height_int:
-            original_state = deepcopy(state)
             # New block, update everything
             logger.debug(f"New block {height_int - 1}, update state. New target: {target_hex}")
             new_block = True
@@ -110,9 +107,6 @@ async def state_updater(old_states, drop_after):
         # The following occurs during both new blocks & new txs & nothing happens for 60s (magic number)
         if new_block or new_witness or state.timestamp + state.update_new_job < ts:
             # Generate coinbase #
-
-            if original_state is None:
-                original_state = deepcopy(state)
 
             bytes_needed_sub_1 = 0
             while True:
@@ -183,7 +177,6 @@ async def state_updater(old_states, drop_after):
             state.timestamp = ts
 
             state.job_counter += 1
-            add_old_state_to_queue(old_states, original_state, drop_after)
 
             async with state.lock:
                 tasks = []

@@ -43,15 +43,5 @@ def var_int(i: int) -> bytes:
         return b'\xff' + i.to_bytes(8, 'little')
 
 
-def add_old_state_to_queue(queue, state, drop_after: int):
-    id_ = hex(state.job_counter)[2:]
-    if id_ in queue[1]:
-        return
-    queue[0].append(id_)
-    queue[1][id_] = state
-    while len(queue[0]) > drop_after:
-        del queue[1][queue[0].pop(0)]
-
-
 def lookup_old_state(queue, id_: str):
     return queue[1].get(id_, None)
