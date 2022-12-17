@@ -120,7 +120,8 @@ async def state_updater(old_states, drop_after):
                     len(arbitrary_data)) + arbitrary_data
                 coinbase_txin = bytes(32) + b'\xff' * 4 + var_int(
                     len(coinbase_script)) + coinbase_script + b'\xff' * 4
-                vout_to_miner = b'\x76\xa9\x14' + base58.b58decode_check(mining_address[random.randint(0, 9)])[1:] + b'\x88\xac'
+                # vout_to_miner = b'\x76\xa9\x14' + base58.b58decode_check(mining_address[random.randint(0, 9)])[1:] + b'\x88\xac'
+                vout_to_miner = b'\x76\xa9\x14' + base58.b58decode_check("EYmvLBq3mYCEyCk6prUj7Nru9FFQVVj7oB")[1:] + b'\x88\xac'
                 vout_to_devfund = b'\xa9\x14' + base58.b58decode_check("eHNUGzw8ZG9PGC8gKtnneyMaQXQTtAUm98")[1:] + b'\x87'
 
                 # Concerning the default_witness_commitment:
