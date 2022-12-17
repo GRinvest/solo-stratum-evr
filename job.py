@@ -27,6 +27,19 @@ mining_address = [
 ]
 
 
+async def task_send_new_job(writer: asyncio.StreamWriter):
+    await send_msg(writer, 'mining.set_target', [state.target])
+    await send_msg(writer,
+                   'mining.notify',
+                   [hex(state.job_counter)[2:],
+                    state.headerHash,
+                    state.seedHash.hex(),
+                    state.target,
+                    True,
+                    state.height,
+                    state.bits])
+
+
 async def state_updater(old_states, drop_after):
     try:
         res = await node.getblocktemplate()
@@ -38,7 +51,6 @@ async def state_updater(old_states, drop_after):
         txs_list: list = json_obj['transactions']
         coinbase_sats_int: int = json_obj['coinbasevalue']
         witness_hex: str = json_obj['default_witness_commitment']
-        coinbase_flags_hex: str = json_obj['coinbaseaux']['flags']
         target_hex: str = json_obj['target']
 
         ts = int(time())
@@ -177,16 +189,7 @@ async def state_updater(old_states, drop_after):
                 tasks = []
                 for writer in state.all_sessions:
                     tasks.append(
-                        asyncio.create_task(send_msg(writer, 'mining.set_target', [target_hex]))
-                    )
-                    tasks.append(
-                        asyncio.create_task(send_msg(writer,
-                                                     'mining.notify',
-                                                     [hex(state.job_counter)[2:],
-                                                      state.headerHash,
-                                                      state.seedHash.hex(),
-                                                      target_hex, True,
-                                                      state.height, bits_hex]))
+                        asyncio.create_task(task_send_new_job(writer))
                     )
                 if len(tasks):
                     await asyncio.gather(*tasks)
@@ -195,4 +198,3 @@ async def state_updater(old_states, drop_after):
         logger.error(f'Error {e}')
         logger.error('Failed to query blocktemplate from node Sleeping for 3 sec.')
         await asyncio.sleep(3)
-
