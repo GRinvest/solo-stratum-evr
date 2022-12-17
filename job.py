@@ -207,5 +207,5 @@ async def state_updater(old_states, drop_after):
             logger.error(f'Error {e}')
             logger.error(
                 'Failed to query blocktemplate from node Sleeping for 10 sec. Any solutions found during this time may not be current. Try restarting the proxy.')
-            await asyncio.sleep(10)
+            await asyncio.sleep(3)
 
