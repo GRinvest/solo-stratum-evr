@@ -8,13 +8,16 @@ from job import state_updater
 from server import handle_client
 
 
-async def job_manager():
+async def job_manager(event: asyncio.Event):
     while True:
         await state_updater([list(), dict()], 20)
         await asyncio.sleep(0.3)
+        if not event.is_set():
+            event.set()
 
 
-async def run_proxy():
+async def run_proxy(event: asyncio.Event):
+    await event.wait()
     server = await asyncio.start_server(
         handle_client,
         config.server.host,
@@ -25,12 +28,13 @@ async def run_proxy():
 
 
 async def execute():
+    event = asyncio.Event()
     while True:
         logger.success('Running Session Program')
         try:
             await asyncio.gather(
-                asyncio.create_task(job_manager()),
-                asyncio.create_task(run_proxy())
+                asyncio.create_task(job_manager(event)),
+                asyncio.create_task(run_proxy(event))
             )
         except Exception as e:
             logger.exception(e)

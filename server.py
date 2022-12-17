@@ -42,10 +42,6 @@ class Proxy:
                     state.all_sessions.remove(self._writer)
 
     async def handle_subscribe(self, msg: dict):
-        while state.lock.locked():
-            await asyncio.sleep(0.01)
-        if self._writer not in state.all_sessions:
-            state.new_sessions.add(self._writer)
         while True:
             self.extra_nonce = '%0x' % random.getrandbits(4 * 4)
             if len(self.extra_nonce) == 4:
@@ -55,6 +51,18 @@ class Proxy:
     async def handle_authorize(self, msg: dict):
         self.worker = msg['params'][0].split('.')[1]
         await self.send_msg(None, True, msg['id'])
+        await self.send_msg('mining.set_target', [state.target])
+        await self.send_msg('mining.notify',
+                            [hex(state.job_counter)[2:],
+                             state.headerHash,
+                             state.seedHash.hex(),
+                             state.target,
+                             True,
+                             state.height,
+                             state.bits])
+        while state.lock.locked():
+            await asyncio.sleep(0.01)
+        state.all_sessions.add(self._writer)
         logger.success(f"Worker {self.worker} connected | ExtraNonce: {self.extra_nonce}")
 
     async def handle_submit(self, msg: dict):

@@ -1,6 +1,5 @@
 import asyncio
 
-from config import config
 from utils import var_int
 
 
@@ -33,7 +32,6 @@ class TemplateState:
     current_commitment: str | None = None
 
     all_sessions: set[asyncio.StreamWriter] = set()
-    new_sessions: set[asyncio.StreamWriter] = set()
 
     lock = asyncio.Lock()
 
