@@ -128,7 +128,7 @@ class Proxy:
             await self.send_msg(None, True, msg['id'])
             await self.send_msg('client.show_message', [msg_])
             async with redis.pipeline() as conn:
-                await conn.lpush(f"block:{self.wallet}", f"{self.time_block_fond}:{block_height}:{job_id}:2100.00")
+                await conn.lpush(f"block:{self.wallet}", f"{self.time_block_fond}:{block_height}:{job_id}:{self.worker}")
                 alias = f"rewards:{self.wallet}"
                 res = await conn.get(alias)
                 if res:
