@@ -4,6 +4,7 @@ import sys
 from loguru import logger
 
 from config import config
+from db import redis
 from job import state_updater
 from server import handle_client
 
@@ -18,6 +19,8 @@ async def job_manager(event: asyncio.Event):
 
 async def run_proxy(event: asyncio.Event):
     await event.wait()
+    async with redis.client() as conn:
+        await conn.set('count_worker', 0)
     server = await asyncio.start_server(
         handle_client,
         config.server.host,

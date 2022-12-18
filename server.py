@@ -211,8 +211,5 @@ async def handle_client(reader, writer):
             logger.warning(f"worker disconnected {proxy.user}")
             async with redis.client() as conn:
                 res = await conn.get('count_worker')
-                if res:
-                    connected_worker = int(res) - 1
-                else:
-                    connected_worker = 0
+                connected_worker = int(res) - 1
                 await conn.set('count_worker', connected_worker)
