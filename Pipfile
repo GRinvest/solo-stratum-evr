@@ -10,6 +10,7 @@ ujson = "*"
 aiohttp = "*"
 pytoml = "*"
 pydantic = "*"
+aioredis = "*"
 
 [dev-packages]
 

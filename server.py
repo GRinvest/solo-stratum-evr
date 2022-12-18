@@ -7,6 +7,7 @@ from loguru import logger
 
 from coindrpc import node
 from state import state
+from db import redis
 
 
 class Proxy:
@@ -64,6 +65,13 @@ class Proxy:
             await asyncio.sleep(0.01)
         state.all_sessions.add(self._writer)
         logger.success(f"Worker {self.worker} connected | ExtraNonce: {self.extra_nonce}")
+        async with redis.client() as conn:
+            res = await conn.get('connected_worker')
+            if res:
+                connected_worker = int(res) + 1
+            else:
+                connected_worker = 1
+            await conn.set('connected_worker', connected_worker)
 
     async def handle_submit(self, msg: dict):
 
@@ -121,6 +129,8 @@ class Proxy:
             logger.success(msg_)
             await self.send_msg(None, True, msg['id'])
             await self.send_msg('client.show_message', [msg_])
+            async with redis.client() as conn:
+                await conn.lpush(f"block:{self.worker}", block_height)
 
     async def handle_eth_submitHashrate(self, msg: dict):
         res = await node.getmininginfo()
@@ -194,3 +204,10 @@ async def handle_client(reader, writer):
                 writer.close()
                 await writer.wait_closed()
             logger.warning(f"worker disconnected {proxy.worker}")
+            async with redis.client() as conn:
+                res = await conn.get('connected_worker')
+                if res:
+                    connected_worker = int(res) - 1
+                else:
+                    connected_worker = 0
+                await conn.set('connected_worker', connected_worker)

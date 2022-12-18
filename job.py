@@ -1,7 +1,6 @@
 import asyncio
 import hashlib
 import random
-from copy import deepcopy
 from time import time
 
 import base58

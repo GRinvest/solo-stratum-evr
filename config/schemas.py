@@ -21,7 +21,15 @@ class Coind(BaseModel):
     rpc_password: Optional[str] = 'Password'
 
 
+class Redis(BaseModel):
+    host: Optional[str] = 'localhost'
+    port: Optional[int] = 6379
+    password: Optional[str] = 'Password'
+    db: Optional[int] = 0
+
+
 class Config(BaseModel):
     general: General
     server: Server
     coind: Coind
+    redis: Redis
