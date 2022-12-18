@@ -25,3 +25,16 @@ async def send_msg(writer: asyncio.StreamWriter,
                 await writer.wait_closed()
             if writer in state.all_sessions:
                 state.all_sessions.remove(writer)
+
+
+async def send_new_job(writer):
+    await send_msg(writer, 'mining.set_target', [state.target])
+    await send_msg(writer,
+                   'mining.notify',
+                   [hex(state.job_counter)[2:],
+                    state.headerHash,
+                    state.seedHash.hex(),
+                    state.target,
+                    True,
+                    state.height,
+                    state.bits])

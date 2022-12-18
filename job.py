@@ -8,7 +8,7 @@ from loguru import logger
 
 from coindrpc import node
 from config import config
-from notification import send_msg
+from notification import send_new_job
 from state import state
 from utils import op_push, var_int, merkle_from_txids, dsha256
 
@@ -24,19 +24,6 @@ mining_address = [
     'EM1KBTezwrTGYwz4yz2aGXvosMrAa36yQt',
     'EQoXMwUDjDgwSq6GMz8XBoDDnr68495Css'
 ]
-
-
-async def task_send_new_job(writer: asyncio.StreamWriter):
-    await send_msg(writer, 'mining.set_target', [state.target])
-    await send_msg(writer,
-                   'mining.notify',
-                   [hex(state.job_counter)[2:],
-                    state.headerHash,
-                    state.seedHash.hex(),
-                    state.target,
-                    True,
-                    state.height,
-                    state.bits])
 
 
 async def state_updater():
@@ -181,7 +168,7 @@ async def state_updater():
                 tasks = []
                 for writer in state.all_sessions:
                     tasks.append(
-                        asyncio.create_task(task_send_new_job(writer))
+                        asyncio.create_task(send_new_job(writer))
                     )
                 if len(tasks):
                     await asyncio.gather(*tasks)

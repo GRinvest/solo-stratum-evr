@@ -8,6 +8,7 @@ from loguru import logger
 from coindrpc import node
 from state import state
 from db import redis
+from notification import send_new_job
 
 
 class Proxy:
@@ -17,7 +18,9 @@ class Proxy:
     def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         self._reader = reader
         self._writer = writer
-        self.worker: str | None = None
+        self.user: str | None = None
+        self.wallet: str | None = None
+        self.worker = 'anonymous'
         self.extra_nonce: str = ''
         self.time_block_fond: int = 0
 
@@ -50,28 +53,24 @@ class Proxy:
         await self.send_msg(None, [None, self.extra_nonce], msg['id'])
 
     async def handle_authorize(self, msg: dict):
-        self.worker = msg['params'][0].split('.')[1]
+        user_list = msg['params'][0].split('.')
+        self.wallet = user_list[0]
+        if len(user_list) == 2:
+            self.worker = user_list[1]
+        self.user = f"{self.wallet}.{self.worker}"
         await self.send_msg(None, True, msg['id'])
-        await self.send_msg('mining.set_target', [state.target])
-        await self.send_msg('mining.notify',
-                            [hex(state.job_counter)[2:],
-                             state.headerHash,
-                             state.seedHash.hex(),
-                             state.target,
-                             True,
-                             state.height,
-                             state.bits])
+        await send_new_job(self._writer)
         while state.lock.locked():
             await asyncio.sleep(0.01)
         state.all_sessions.add(self._writer)
-        logger.success(f"Worker {self.worker} connected | ExtraNonce: {self.extra_nonce}")
+        logger.success(f"User {self.user} connected | ExtraNonce: {self.extra_nonce}")
         async with redis.client() as conn:
-            res = await conn.get('connected_worker')
+            res = await conn.get('count_worker')
             if res:
                 connected_worker = int(res) + 1
             else:
                 connected_worker = 1
-            await conn.set('connected_worker', connected_worker)
+            await conn.set('count_worker', connected_worker)
 
     async def handle_submit(self, msg: dict):
 
@@ -80,8 +79,7 @@ class Proxy:
         header_hex = msg['params'][3]
         mixhash_hex = msg['params'][4]
 
-        logger.success('Possible solution')
-        logger.info(self.worker)
+        logger.success(f'Possible solution user: {self.user}')
         logger.info(job_id)
         logger.info(header_hex)
 
@@ -120,17 +118,24 @@ class Proxy:
             await self.send_msg(None, False, msg['id'], [20, res.get('result')])
 
         if res.get('result', 0) is None:
-            self.time_block_fond = time()
+            self.time_block_fond = int(time())
             state.timestamp_block_fond = time()
             block_height = int.from_bytes(
                 bytes.fromhex(block_hex[(4 + 32 + 32 + 4 + 4) * 2:(4 + 32 + 32 + 4 + 4 + 4) * 2]), 'little',
                 signed=False)
-            msg_ = f'Found block worker {self.worker} (may or may not be accepted by the chain): {block_height}'
+            msg_ = f'Found block user {self.user} (may or may not be accepted by the chain): {block_height}'
             logger.success(msg_)
             await self.send_msg(None, True, msg['id'])
             await self.send_msg('client.show_message', [msg_])
-            async with redis.client() as conn:
-                await conn.lpush(f"block:{self.worker}", block_height)
+            async with redis.pipeline() as conn:
+                await conn.lpush(f"block:{self.wallet}", f"{self.time_block_fond}:{block_height}:{job_id}:2100.00")
+                alias = f"rewards:{self.wallet}"
+                res = await conn.get(alias)
+                if res:
+                    rewards = float(res) + 2100.00
+                else:
+                    rewards = 2100.00
+                await conn.set(alias, rewards)
 
     async def handle_eth_submitHashrate(self, msg: dict):
         res = await node.getmininginfo()
@@ -195,7 +200,7 @@ async def handle_client(reader, writer):
     except Exception as e:
         logger.error(e)
     finally:
-        if proxy.worker:
+        if proxy.user:
             while state.lock.locked():
                 await asyncio.sleep(0.01)
             if writer in state.all_sessions:
@@ -203,11 +208,11 @@ async def handle_client(reader, writer):
             if not writer.is_closing():
                 writer.close()
                 await writer.wait_closed()
-            logger.warning(f"worker disconnected {proxy.worker}")
+            logger.warning(f"worker disconnected {proxy.user}")
             async with redis.client() as conn:
-                res = await conn.get('connected_worker')
+                res = await conn.get('count_worker')
                 if res:
                     connected_worker = int(res) - 1
                 else:
                     connected_worker = 0
-                await conn.set('connected_worker', connected_worker)
+                await conn.set('count_worker', connected_worker)
