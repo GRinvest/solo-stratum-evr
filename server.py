@@ -7,7 +7,6 @@ from loguru import logger
 
 from coindrpc import node
 from state import state
-from db import redis
 from notification import send_new_job
 
 
@@ -64,9 +63,6 @@ class Proxy:
             await asyncio.sleep(0.01)
         state.all_sessions.add(self._writer)
         logger.success(f"User {self.user} connected | ExtraNonce: {self.extra_nonce}")
-        async with redis.client() as conn:
-            res = await conn.get('count_worker')
-            await conn.set('count_worker', int(res) + 1)
 
     async def handle_submit(self, msg: dict):
 
@@ -123,15 +119,6 @@ class Proxy:
             logger.success(msg_)
             await self.send_msg(None, True, msg['id'])
             await self.send_msg('client.show_message', [msg_])
-            async with redis.client() as conn:
-                await conn.lpush(f"block:{self.wallet}", f"{self.time_block_fond}:{block_height}:{job_id}:{self.worker}")
-                alias = f"rewards:{self.wallet}"
-                res = await conn.get(alias)
-                if res:
-                    rewards = float(res) + 2100.00
-                else:
-                    rewards = 2100.00
-                await conn.set(alias, rewards)
 
     async def handle_eth_submitHashrate(self, msg: dict):
         res = await node.getmininginfo()
@@ -205,6 +192,3 @@ async def handle_client(reader, writer):
                 writer.close()
                 await writer.wait_closed()
             logger.warning(f"worker disconnected {proxy.user}")
-            async with redis.client() as conn:
-                res = await conn.get('count_worker')
-                await conn.set('count_worker', int(res) - 1)
