@@ -1,6 +1,7 @@
 import asyncio
 
 from utils import var_int
+from config import config
 
 
 class TemplateState:
@@ -11,7 +12,7 @@ class TemplateState:
 
     # The address of the miner that first connects is
     # the one that is used
-    address = ''
+    address = config.general.mining_address
     timestamp_block_fond = 0
     update_new_job = 45
 

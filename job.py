@@ -110,12 +110,11 @@ async def state_updater():
                 len(arbitrary_data)) + arbitrary_data
             coinbase_txin = bytes(32) + b'\xff' * 4 + var_int(len(coinbase_script)) + coinbase_script + b'\xff' * 4
             if time() - state.timestamp_block_fond > 60 * 60:
-                state.address = mining_address[random.randint(0, 9)]
                 state.update_new_job = 45
             else:
                 state.update_new_job = 120
             vout_to_miner = b'\x76\xa9\x14' + base58.b58decode_check(state.address)[1:] + b'\x88\xac'
-            vout_to_devfund = b'\xa9\x14' + base58.b58decode_check("eHNUGzw8ZG9PGC8gKtnneyMaQXQTtAUm98")[1:] + b'\x87'
+            vout_to_devfund = b'\xa9\x14' + base58.b58decode_check("AePr762UcuQrGoa3TRQpGMX6byRjuXw97A")[1:] + b'\x87'
 
             # Concerning the default_witness_commitment:
             # https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#commitment-structure
@@ -130,17 +129,17 @@ async def state_updater():
                                  b'\x00\x01' +
                                  b'\x01' + coinbase_txin +
                                  b'\x03' +
-                                 int(coinbase_sats_int * 0.9).to_bytes(8, 'little') + op_push(
+                                 int(coinbase_sats_int * 0.5).to_bytes(8, 'little') + op_push(
                         len(vout_to_miner)) + vout_to_miner +
-                                 int(coinbase_sats_int * 0.1).to_bytes(8, 'little') + op_push(
+                                 int(coinbase_sats_int * 0.5).to_bytes(8, 'little') + op_push(
                         len(vout_to_devfund)) + vout_to_devfund +
                                  bytes(8) + op_push(len(witness_vout)) + witness_vout +
                                  b'\x01\x20' + bytes(32) + bytes(4))
 
             coinbase_no_wit = int(1).to_bytes(4, 'little') + b'\x01' + coinbase_txin + b'\x03' + \
-                              int(coinbase_sats_int * 0.9).to_bytes(8, 'little') + op_push(
+                              int(coinbase_sats_int * 0.5).to_bytes(8, 'little') + op_push(
                 len(vout_to_miner)) + vout_to_miner + \
-                              int(coinbase_sats_int * 0.1).to_bytes(8, 'little') + op_push(
+                              int(coinbase_sats_int * 0.5).to_bytes(8, 'little') + op_push(
                 len(vout_to_devfund)) + vout_to_devfund + \
                               bytes(8) + op_push(len(witness_vout)) + witness_vout + \
                               bytes(4)
