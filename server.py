@@ -132,8 +132,8 @@ class Proxy:
         for x, y in self.hashrate_dict.items():
             totalHashrate += y
         if totalHashrate != 0:
-            if time() - self.last_time_reported_hs > 10 * 60:
-                self.last_time_reported_hs = time()
+            if time() - state.last_time_reported_hs > 10 * 60:
+                state.last_time_reported_hs = time()
                 TTF = difficulty_int * 2 ** 32 / totalHashrate
                 logger.debug(
                     f'Total Solo Pool Reported Hashrate: {round(totalHashrate / 1000000, 2)} Mh/s | Estimated time to find: {round(TTF / 60, 2)} minute')
