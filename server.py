@@ -21,7 +21,7 @@ class Proxy:
         self.wallet: str | None = None
         self.worker = 'anonymous'
         self.extra_nonce: str = ''
-        self.time_block_fond: int = 0
+        self.time_block_fond: int = int(time())
 
     async def send_msg(self,
                        method: str | None,
@@ -155,10 +155,10 @@ class Proxy:
                     break
                 j: dict = ujson.loads(data)
             except (TimeoutError, asyncio.TimeoutError):
-                if time() - self.time_block_fond < 4 * 60 * 60:
-                    continue
-                else:
+                if time() - self.time_block_fond > 4 * 60 * 60:
                     break
+                else:
+                    continue
             except (ValueError, ConnectionResetError):
                 break
             else:
