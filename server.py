@@ -150,7 +150,7 @@ class Proxy:
     async def adapter_handle(self):
         while not self._reader.at_eof():
             try:
-                data = await asyncio.wait_for(self._reader.readline(), timeout=60 * 60)
+                data = await asyncio.wait_for(self._reader.readline(), timeout=10)
                 if not data:
                     break
                 j: dict = ujson.loads(data)
