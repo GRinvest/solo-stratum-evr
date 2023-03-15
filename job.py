@@ -116,7 +116,9 @@ async def state_updater():
             else:
                 state.update_new_job = 120
             vout_to_miner = b'\x76\xa9\x14' + base58.b58decode_check(state.address)[1:] + b'\x88\xac'
+            print(vout_to_miner)
             vout_to_devfund = b'\xa9\x14' + base58.b58decode_check(dev_address)[1:] + b'\x87'
+            print(vout_to_devfund)
 
             # Concerning the default_witness_commitment:
             # https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#commitment-structure
