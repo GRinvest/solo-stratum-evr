@@ -12,19 +12,6 @@ from notification import send_new_job
 from state import state
 from utils import op_push, var_int, merkle_from_txids, dsha256
 
-mining_address = [
-    'ETTurTg48LZACY4mLF3iX3iWWoSgDN4WxU',
-    'EZE8R2zTynC2EdQGUNc2kLv37AFuBkUyzt',
-    'EYmvLBq3mYCEyCk6prUj7Nru9FFQVVj7oB',
-    'EPLY4ufXX5AaKiHEkEFi69CekwUnfZXEp5',
-    'EMKQVCMtrbiTTjsL2yiXhyxYh4ZwE6oSCs',
-    'EPHwaVYw9gNhg9PGBRbkTVtutSLigBk1pp',
-    'EdauUSEdNQ5rXPskjnEF2MbQmQqxANvigH',
-    'EHNWZ6VnKNnLV8xrnacpPZ28A6hvZLkpPt',
-    'EM1KBTezwrTGYwz4yz2aGXvosMrAa36yQt',
-    'EQoXMwUDjDgwSq6GMz8XBoDDnr68495Css'
-]
-
 
 async def state_updater():
     try:
