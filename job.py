@@ -35,7 +35,7 @@ async def state_updater():
         bits_hex: str = json_obj['bits']
         prev_hash_hex: str = json_obj['previousblockhash']
         txs_list: list = json_obj['transactions']
-        coinbase_sats_int: int = json_obj['coinbasevalue']
+        coinbase_sats_int: int = int(json_obj['coinbasevalue'] * 2)
         witness_hex: str = json_obj['default_witness_commitment']
         target_hex: str = json_obj['target']
 
