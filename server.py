@@ -137,7 +137,7 @@ class Proxy:
                 TTF = difficulty_int * 2 ** 32 / totalHashrate
                 logger.debug(
                     f'Total Solo Pool Reported Hashrate: {round(totalHashrate / 1000000, 2)} Mh/s | Estimated time to find: {round(TTF / 60, 2)} minute')
-                logger.debug(f'Network Hashrate: {round(networkhashps_int / 1000000000000, 2)} Th/s')
+                logger.debug(f'Network Hashrate: {round(networkhashps_int / 1000000000, 2)} Gh/s')
             TTF = difficulty_int * 2 ** 32 / hashrate
             await self.send_msg(None, True, msg['id'])
             await self.send_msg('client.show_message',
