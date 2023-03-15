@@ -138,13 +138,14 @@ class Proxy:
                 logger.debug(
                     f'Total Solo Pool Reported Hashrate: {round(totalHashrate / 1000000, 2)} Mh/s | Estimated time to find: {round(TTF / 60, 2)} minute')
                 logger.debug(f'Network Hashrate: {round(networkhashps_int / 1000000000, 2)} Gh/s')
-            TTF = difficulty_int * 2 ** 32 / hashrate
-            await self.send_msg(None, True, msg['id'])
-            await self.send_msg('client.show_message',
-                                [f'Estimated time to find: {round(TTF / 3600, 2)} hours'])
-            if time() - self.last_time_reported_hs > 5 * 60:
-                self.last_time_reported_hs = time()
-                logger.debug(f'Worker {self.worker} Reported Hashrate: {round(hashrate / 1000000, 2)} Mh/s ')
+            if hashrate > 0:
+                TTF = difficulty_int * 2 ** 32 / hashrate
+                await self.send_msg(None, True, msg['id'])
+                await self.send_msg('client.show_message',
+                                    [f'Estimated time to find: {round(TTF / 3600, 2)} hours'])
+                if time() - self.last_time_reported_hs > 5 * 60:
+                    self.last_time_reported_hs = time()
+                    logger.debug(f'Worker {self.worker} Reported Hashrate: {round(hashrate / 1000000, 2)} Mh/s ')
 
     async def adapter_handle(self):
         while not self._reader.at_eof():
