@@ -143,7 +143,7 @@ class Proxy:
                 await self.send_msg(None, True, msg['id'])
                 await self.send_msg('client.show_message',
                                     [f'Estimated time to find: {round(TTF / 3600, 2)} hours'])
-                if time() - self.last_time_reported_hs > 5 * 60:
+                if time() - self.last_time_reported_hs > 60 * 60:
                     self.last_time_reported_hs = time()
                     logger.debug(f'Worker {self.worker} Reported Hashrate: {round(hashrate / 1000000, 2)} Mh/s ')
 
