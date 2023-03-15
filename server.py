@@ -194,4 +194,5 @@ async def handle_client(reader, writer):
             if not writer.is_closing():
                 writer.close()
                 await writer.wait_closed()
+            proxy.hashrate_dict.update({proxy.worker: 0})
             logger.warning(f"worker disconnected {proxy.user}")
