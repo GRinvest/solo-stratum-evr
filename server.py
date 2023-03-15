@@ -155,7 +155,10 @@ class Proxy:
                     break
                 j: dict = ujson.loads(data)
             except (TimeoutError, asyncio.TimeoutError):
-                break
+                if time() - self.time_block_fond < 4 * 60 * 60:
+                    continue
+                else:
+                    break
             except (ValueError, ConnectionResetError):
                 break
             else:
@@ -172,10 +175,6 @@ class Proxy:
                     await self.send_msg(None, False, None, [20, f'Method {method} not supported'])
                 else:
                     logger.error(j)
-                    break
-                if time() - self.time_block_fond < 4 * 60 * 60:
-                    continue
-                else:
                     break
 
 
